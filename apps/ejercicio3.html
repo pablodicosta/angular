@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html ng-app="events">
+<head>
+	<title>Ejercicio 3</title>
+	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+	<script type="text/javascript" src="angular.min.js"></script>
+
+	<script type="text/javascript">
+
+		var app = angular.module('events', []);
+
+		app.controller('mainCtrl', function ($scope) {
+			$scope.$on('testEvent', function (evt, newVal, oldVal) {
+				$scope.$broadcast('testEvent2', newVal, oldVal);
+			});
+		});
+
+		app.controller('childOneCtrl', function ($scope) {	
+
+			$scope.modelUser = {
+				name: 'Pablo',
+				surname: 'Diaz'
+			};
+
+			$scope.btnclick = function () {
+				$scope.modelUser = angular.copy($scope.user);
+			};
+
+			$scope.$watch('modelUser', function (newVal, oldVal) {
+				$scope.$emit('testEvent', newVal, oldVal);
+			});
+
+		});
+
+		app.controller('childTwoCtrl', function ($scope) {
+			$scope.$on('testEvent2', function (evt, newVal, oldVal) {
+				$scope.name = newVal.name;
+				$scope.surname = newVal.surname;
+			});
+		});
+
+	</script>
+
+</head>
+<body>
+	<div ng-controller="mainCtrl">
+		
+		<div ng-controller="childOneCtrl">
+			Name:		
+			<input type="text" ng-model="user.name" />
+			<br />
+			Surname:
+			<input type="text" ng-model="user.surname" />
+			<br />
+			<button ng-click="btnclick()">Click me!</button>
+		</div>
+
+		<div ng-controller="childTwoCtrl">
+			{{name}}
+			{{surname}}
+		</div>
+
+	</div>
+</body>
+</html>
