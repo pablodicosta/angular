@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html ng-app="routes">
+<head>
+	<title>Ejercicio 5</title>
+	<script type="text/javascript" src="../angular.min.js"></script>
+	<script type="text/javascript" src="../angular-route.min.js"></script>
+
+	<script type="text/javascript">
+
+		var app = angular.module('routes', ['ngRoute']);
+
+		var route1Model = {	routeId: 1 },
+			route2Model = { routeId: 2 },
+			route3Model = { routeId: 3 };
+
+		var getDate = function ($q, $http) {
+
+			var deferred = $q.defer();
+
+			$http.get('/rest/date')
+				.success(function (data) {
+					deferred.resolve(data);
+				})
+				.error(function () {
+					deferred.reject();
+				});
+
+			return deferred.promise;
+		}
+
+		app.config(['$routeProvider', function ($routeProvider) {
+
+			$routeProvider
+				.when('/route1/:from?', {
+					templateUrl: 'routeView.html',
+					controller: 'routeCtrl',
+					resolve: {
+						model: function () { return route1Model; },
+						dateInfo: getDate
+					} 
+				})
+				.when('/route2/:from?', {
+					templateUrl: 'routeView.html',
+					controller: 'routeCtrl',
+					resolve: { 
+						model: function () { return route2Model; },
+						dateInfo: getDate
+					} 
+				})
+				.when('/route3/:from?', {
+					templateUrl: 'routeView.html',
+					controller: 'routeCtrl',
+					resolve: { 
+						model: function () { return route3Model; },
+						dateInfo: getDate
+					} 
+				})
+				.otherwise({
+					redirectTo: '/route1'
+				});
+			
+		}]);
+
+		app.controller('routeCtrl', function ($scope, $routeParams, $rootScope, model, dateInfo) {
+			$rootScope.$on('$routeChangeError', function () {
+				$scope.date = 'ERROR!';
+			});
+			$scope.currentId = model.routeId;
+			$scope.from = $routeParams.from;
+			$scope.date = dateInfo.currentDate;
+		});
+
+		app.controller('mainCtrl', function ($scope, $route, $location) {
+			$scope.$route = $route;
+
+			$scope.go = function (path) {
+				var currentRoute = $location.path().split('/')[1];
+				$location.path(path + '/' + currentRoute);
+			}
+		});
+
+	</script>
+
+</head>
+<body>
+	<div ng-controller="mainCtrl">
+		Index
+		<br />
+		<button ng-click="go('route1')">Route 1</button>
+		<button ng-click="go('route2')">Route 2</button>
+		<button ng-click="go('route3')">Route 3</button>
+	</div>	
+	<div ng-view></div>
+</body>
+</html>
