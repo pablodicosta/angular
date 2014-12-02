@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html ng-app="promises">
+<head>
+	<title>Ejercicio 4</title>
+	<script type="text/javascript" src="angular.min.js"></script>
+
+	<script type="text/javascript">
+
+		var app = angular.module('promises', []);
+
+		app.service('callerService', function ($http, $q) {
+			
+			return {
+
+				arrayAdd: function (values) {
+					
+					var deferred = $q.defer()
+						restCalls = [];
+
+					angular.forEach(values, function (val) {
+						restCalls.push($http.get('/rest/add/' + val.a + '/' + val.b));
+					});
+
+					$q.all(restCalls)
+						.then(function (results) {
+							deferred.resolve(results);
+						}, function (errors) {
+							deferred.reject(errors);
+						});
+
+					return deferred.promise;
+				}
+
+			};
+
+		});
+
+		app.controller('mainCtrl', function ($scope, callerService) {
+
+			$scope.btnClick = function () {
+				callerService.arrayAdd($scope.nums)
+					.then(function (results) {
+						$scope.results = results;
+					}, function (errors) {
+						$scope.results = errors;
+					});
+			};
+
+		});
+
+	</script>
+</head>
+<body ng-controller="mainCtrl">
+
+	<input type="text" ng-model="nums[0].a" />
+	<input type="text" ng-model="nums[0].b" />
+	<br />
+
+	<input type="text" ng-model="nums[1].a" />
+	<input type="text" ng-model="nums[1].b" />
+	<br />
+
+	<input type="text" ng-model="nums[2].a" />
+	<input type="text" ng-model="nums[2].b" />
+	<br />
+
+	<input type="text" ng-model="nums[3].a" />
+	<input type="text" ng-model="nums[3].b" />
+	<br />
+
+	<input type="text" ng-model="nums[4].a" />
+	<input type="text" ng-model="nums[4].b" />
+	<br /><br />
+
+	<button ng-click="btnClick()">Add!</button>
+	<br /><br />
+
+	<div ng-repeat="res in results">
+		{{res.data.result}}
+	</div>
+
+
+</body>
+</html>

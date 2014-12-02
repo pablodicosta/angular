@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html ng-app="testApp">
+<head>
+	<title>Ejercicio 1</title>
+	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+
+	<style type="text/css">
+		.css-form input.ng-invalid.ng-dirty {
+			background-color: #FA787E;
+		}
+	</style>
+
+	<script type="text/javascript" src="angular.min.js"></script>
+
+	<script type="text/javascript">
+
+		var testApp = angular.module("testApp", []);
+
+		testApp.controller("ExampleController", function ($scope) {
+
+			$scope.validate = function () {
+				$scope.invalidName = $scope.form.uName.$invalid;
+			}
+
+		});
+
+	</script>
+</head>
+<body>
+	<div ng-controller="ExampleController">
+	  <form novalidate class="css-form" name="form">
+		  Name:
+		  <input type="text" name="uName" ng-model="user.name" ng-model-options="{ updateOn: 'blur' }" ng-pattern="/[\a-z]/" required /><br />
+		  <div ng-show="invalidName">
+		  	<div ng-show="form.uName.$error.required">Required Field</div>
+		  	<div ng-show="form.uName.$error.pattern">Invalid Name</div>
+		  </div>
+		  Age:
+		  <input type="text" name="uAge" ng-model="user.age" ng-model-options="{ updateOn: 'blur' }" ng-pattern="/[\0-9]/" required /><br />
+		  Address:
+		  <input type="text" name="uAddress" ng-model="user.address" ng-model-options="{ updateOn: 'blur' }" /><br />		  
+		  <button ng-click="validate()">Save</button>
+	  </form>
+	</div>	
+</body>
+</html>

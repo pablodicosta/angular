@@ -33,6 +33,18 @@ app.post('/rest/login', function (req, res) {
 	}, 3000);
 });
 
+app.get('/rest/add/:a/:b', function (req, res) {
+	var a = Number(req.params.a),
+		b = Number(req.params.b);
+		time = (Math.floor(Math.random() *5) + 1) * 1000;
+
+	setTimeout(function () {
+		res.json({
+			result: a + b
+		});
+	}, time);
+});
+
 app.listen(3000, function () {
 	console.log('Server started...');
 });
