@@ -1,9 +1,14 @@
 var express = require('express'),
-	server = express();
+	bodyParser = require('body-parser'),
+	app = express();
 
-server.use(express.static(__dirname + '/apps'));
+app.use(express.static(__dirname + '/apps'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+	extended: true
+}));
 
-server.get('/rest/date', function (req, res) {
+app.get('/rest/date', function (req, res) {
 	setTimeout(function () {
 		res.json ({
 			currentDate: new Date()
@@ -11,6 +16,24 @@ server.get('/rest/date', function (req, res) {
 	}, 3000);
 });
 
-server.listen(3000);
+app.post('/rest/login', function (req, res) {
+	var credentials = {
+			user: 'pablo',
+			password: 'reload'
+		},
+		response = {
+			status: 'ok'
+		};
 
-console.log('Server started...');
+	console.log(req.body.user);
+	console.log(req.body.password);	
+
+	setTimeout(function () {
+		res.json (response);
+	}, 3000);
+});
+
+app.listen(3000, function () {
+	console.log('Server started...');
+});
+

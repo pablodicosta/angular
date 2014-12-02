@@ -13,18 +13,55 @@
 			route2Model = { routeId: 2 },
 			route3Model = { routeId: 3 };
 
-		var getDate = function ($q, $http) {
+		app.constant('AUTH_EVENTS', {
+			loginSuccess: 'auth-login-success',
+			loginFailed: 'auth-login-failed',
+			logoutSuccess: 'auth-logout-success',
+			sessionTimeout: 'auth-session-timeout',
+			notAuthenticated: 'auth-not-authenticated',
+			notAuthorized: 'auth-not-authorized'
+		});
 
+		app.constant('USER_ROLES', {
+			all: '*',
+			admin: 'admin',
+			editor: 'editor',
+			guest: 'guest'
+		});
+
+		app.service('loginService', function () {
+
+			return {
+
+				///
+			}
+			
+		});
+
+		app.service('dateService', function ($q, $http) {
+			return {
+				getDate: function () {
+					var deferred = $q.defer();
+					$http.get('/rest/date')
+						.success(function (data) {
+							deferred.resolve(data);
+						})
+						.error(function () {
+							deferred.reject();
+						});
+					return deferred.promise;
+				}				
+			}			
+		});
+
+		var getDate = function ($q, dateService) {
 			var deferred = $q.defer();
-
-			$http.get('/rest/date')
-				.success(function (data) {
+			dateService.getDate()
+				.then(function (data) {
 					deferred.resolve(data);
-				})
-				.error(function () {
+				}, function () {
 					deferred.reject();
 				});
-
 			return deferred.promise;
 		}
 
@@ -61,16 +98,18 @@
 			
 		}]);
 
-		app.controller('routeCtrl', function ($scope, $routeParams, $rootScope, model, dateInfo) {
-			$rootScope.$on('$routeChangeError', function () {
-				$scope.date = 'ERROR!';
-			});
+		app.controller('routeCtrl', function ($scope, $routeParams, model, dateInfo) {
 			$scope.currentId = model.routeId;
 			$scope.from = $routeParams.from;
 			$scope.date = dateInfo.currentDate;
 		});
 
-		app.controller('mainCtrl', function ($scope, $route, $location) {
+		app.controller('mainCtrl', function ($scope, $route, $location, $rootScope) {
+
+			$rootScope.$on('$routeChangeError', function () {
+				$scope.date = 'ERROR!';
+			});
+
 			$scope.$route = $route;
 
 			$scope.go = function (path) {
