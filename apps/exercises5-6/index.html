@@ -29,13 +29,24 @@
 			guest: 'guest'
 		});
 
-		app.service('loginService', function () {
-
+		app.service('loginService', function ($q, $http) {
 			return {
-
-				///
+				login: function (credentials) {
+					var deferred = $q.defer();
+					$http.post('/rest/login', credentials)
+						.success(function (res) {
+							if(res.logged) {
+								deferred.resolve();
+							} else {
+								deferred.reject(true);
+							}
+						})
+						.error(function (res) {
+							deferred.reject(false);
+						});
+					return deferred.promise;
+				}
 			}
-			
 		});
 
 		app.service('dateService', function ($q, $http) {
@@ -92,11 +103,26 @@
 						dateInfo: getDate
 					} 
 				})
+				.when('/login', {
+					templateUrl: 'login.html',
+					controller: 'loginCtrl'
+				})
 				.otherwise({
 					redirectTo: '/route1'
 				});
 			
 		}]);
+
+		app.controller('loginCtrl', function ($scope, loginService) {
+			$scope.login = function (credentials) {
+				loginService.login(credentials)
+					.then(function () {
+						$scope.logged = "Access granted!";
+					}, function (res) {
+						$scope.logged = res ? "Invalid password..." : "Login failed...";
+					});
+			};
+		});
 
 		app.controller('routeCtrl', function ($scope, $routeParams, model, dateInfo) {
 			$scope.currentId = model.routeId;
@@ -115,7 +141,7 @@
 			$scope.go = function (path) {
 				var currentRoute = $location.path().split('/')[1];
 				$location.path(path + '/' + currentRoute);
-			}
+			};
 		});
 
 	</script>

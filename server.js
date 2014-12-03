@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({
 
 app.get('/rest/date', function (req, res) {
 	setTimeout(function () {
-		res.json ({
+		res.json({
 			currentDate: new Date()
 		});
 	}, 3000);
@@ -19,17 +19,16 @@ app.get('/rest/date', function (req, res) {
 app.post('/rest/login', function (req, res) {
 	var credentials = {
 			user: 'pablo',
-			password: 'reload'
+			password: 'diaz42'
 		},
 		response = {
-			status: 'ok'
+			logged: JSON.stringify(credentials) == JSON.stringify(req.body)
 		};
 
-	console.log(req.body.user);
-	console.log(req.body.password);	
+	console.log(credentials);
 
 	setTimeout(function () {
-		res.json (response);
+		res.json(response);
 	}, 3000);
 });
 
