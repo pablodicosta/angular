@@ -29,14 +29,29 @@
 			guest: 'guest'
 		});
 
-		app.service('loginService', function ($q, $http) {
+		app.service('userSession', function () {
+			return {
+				create: function (userId, userRole) {
+					this.userId = userId;
+					this.userRole = userRole;
+				},
+				destroy: function () {
+					this.userId = null;
+					this.userRole = null;
+				}				
+			}
+		});
+
+		app.service('loginService', function ($q, $http, userSession, USER_ROLES) {
 			return {
 				login: function (credentials) {
 					var deferred = $q.defer();
 					$http.post('/rest/login', credentials)
 						.success(function (res) {
 							if(res.logged) {
-								deferred.resolve();
+								userSession.create(credentials.user, USER_ROLES.all);
+								console.log(userSession);
+								deferred.resolve();								
 							} else {
 								deferred.reject(true);
 							}
@@ -45,6 +60,12 @@
 							deferred.reject(false);
 						});
 					return deferred.promise;
+				},
+				logout: function () {
+					userSession.destroy();
+				},
+				isAuthenticated: function () {
+					return !!userSession.userId;
 				}
 			}
 		});
@@ -113,30 +134,34 @@
 			
 		}]);
 
-		app.controller('loginCtrl', function ($scope, loginService) {
+		app.controller('loginCtrl', function ($scope, loginService, $location, userSession) {
 			$scope.login = function (credentials) {
 				loginService.login(credentials)
 					.then(function () {
 						$scope.logged = "Access granted!";
+						$location.path('route1');
 					}, function (res) {
 						$scope.logged = res ? "Invalid password..." : "Login failed...";
 					});
 			};
 		});
 
-		app.controller('routeCtrl', function ($scope, $routeParams, model, dateInfo) {
+		app.controller('routeCtrl', function ($scope, $routeParams, model, dateInfo, userSession) {
+			
+			console.log(userSession.userId);
+
 			$scope.currentId = model.routeId;
 			$scope.from = $routeParams.from;
-			$scope.date = dateInfo.currentDate;
+			$scope.date = dateInfo.currentDate;			
 		});
 
-		app.controller('mainCtrl', function ($scope, $route, $location, $rootScope) {
-
+		app.controller('mainCtrl', function ($scope, $rootScope, $location, loginService) {
 			$rootScope.$on('$routeChangeError', function () {
 				$scope.date = 'ERROR!';
 			});
-
-			$scope.$route = $route;
+			
+			$scope.template = { nav: "nav.html" };
+			$scope.isAuthenticated = loginService.isAuthenticated;
 
 			$scope.go = function (path) {
 				var currentRoute = $location.path().split('/')[1];
@@ -147,14 +172,8 @@
 	</script>
 
 </head>
-<body>
-	<div ng-controller="mainCtrl">
-		Index
-		<br />
-		<button ng-click="go('route1')">Route 1</button>
-		<button ng-click="go('route2')">Route 2</button>
-		<button ng-click="go('route3')">Route 3</button>
-	</div>	
+<body ng-controller="mainCtrl">
+	<div ng-if="isAuthenticated()" ng-include="template.nav"></div>
 	<div ng-view></div>
 </body>
 </html>
