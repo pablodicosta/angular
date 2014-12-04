@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html ng-app="routes">
 <head>
-	<title>Ejercicio 5</title>
+	<title>Ejercicio 5 y 6</title>
 	<script type="text/javascript" src="../angular.min.js"></script>
 	<script type="text/javascript" src="../angular-route.min.js"></script>
+	<script type="text/javascript" src="../angular-cookies.min.js"></script>
 
 	<script type="text/javascript">
 
-		var app = angular.module('routes', ['ngRoute']);
+		var app = angular.module('routes', ['ngRoute', 'ngCookies']);
 
 		var route1Model = {	routeId: 1 },
 			route2Model = { routeId: 2 },
@@ -23,35 +24,39 @@
 		});
 
 		app.constant('USER_ROLES', {
-			all: '*',
 			admin: 'admin',
 			editor: 'editor',
 			guest: 'guest'
 		});
 
-		app.service('userSession', function () {
+		app.service('userSession', function ($cookieStore) {
 			return {
 				create: function (userId, userRole) {
-					this.userId = userId;
-					this.userRole = userRole;
+					$cookieStore.put('userId', userId);
+					$cookieStore.put('userRole', userRole);
 				},
 				destroy: function () {
-					this.userId = null;
-					this.userRole = null;
-				}				
+					$cookieStore.remove('userId');
+					$cookieStore.remove('userRole');
+				},
+				get: function () {
+					return {
+						userId: $cookieStore.get('userId'),
+						userRole: $cookieStore.get('userRole')
+					}
+				}
 			}
 		});
 
-		app.service('loginService', function ($q, $http, userSession, USER_ROLES) {
+		app.service('loginService', function ($q, $http, userSession) {
 			return {
 				login: function (credentials) {
 					var deferred = $q.defer();
 					$http.post('/rest/login', credentials)
 						.success(function (res) {
-							if(res.logged) {
-								userSession.create(credentials.user, USER_ROLES.all);
-								console.log(userSession);
-								deferred.resolve();								
+							if(res.username == credentials.user) {
+								userSession.create(res.username, res.role);
+								deferred.resolve();
 							} else {
 								deferred.reject(true);
 							}
@@ -65,7 +70,24 @@
 					userSession.destroy();
 				},
 				isAuthenticated: function () {
-					return !!userSession.userId;
+					return !!userSession.get().userId;
+				},
+				isAuthorized: function (roles) {
+					if(!angular.isArray(roles)) {
+						roles = [roles];
+					}
+					return this.isAuthenticated() && roles.indexOf(userSession.get().userRole) !== -1;
+				},
+				getUserInfo: function () {
+					if(this.isAuthenticated()) {
+						var result = {
+							name: userSession.get().userId,
+							role: userSession.get().userRole
+						}
+					} else {
+						var result = null;
+					}
+					return result;
 				}
 			}
 		});
@@ -82,8 +104,8 @@
 							deferred.reject();
 						});
 					return deferred.promise;
-				}				
-			}			
+				}
+			}
 		});
 
 		var getDate = function ($q, dateService) {
@@ -97,12 +119,19 @@
 			return deferred.promise;
 		}
 
-		app.config(['$routeProvider', function ($routeProvider) {
+		app.config(function ($routeProvider, USER_ROLES) {
 
 			$routeProvider
 				.when('/route1/:from?', {
 					templateUrl: 'routeView.html',
 					controller: 'routeCtrl',
+					data: {
+						authorizedRoles: [
+							USER_ROLES.admin,
+							USER_ROLES.editor,
+							USER_ROLES.guest
+						]
+					},
 					resolve: {
 						model: function () { return route1Model; },
 						dateInfo: getDate
@@ -111,6 +140,12 @@
 				.when('/route2/:from?', {
 					templateUrl: 'routeView.html',
 					controller: 'routeCtrl',
+					data: {
+						authorizedRoles: [
+							USER_ROLES.admin,
+							USER_ROLES.editor
+						]
+					},
 					resolve: { 
 						model: function () { return route2Model; },
 						dateInfo: getDate
@@ -119,7 +154,12 @@
 				.when('/route3/:from?', {
 					templateUrl: 'routeView.html',
 					controller: 'routeCtrl',
-					resolve: { 
+					data: {
+						authorizedRoles: [
+							USER_ROLES.admin
+						]
+					},
+					resolve: {
 						model: function () { return route3Model; },
 						dateInfo: getDate
 					} 
@@ -128,44 +168,84 @@
 					templateUrl: 'login.html',
 					controller: 'loginCtrl'
 				})
+				.when('/noaccess', {
+					template: 'Access Denied!'
+				})
 				.otherwise({
 					redirectTo: '/route1'
 				});
 			
-		}]);
+		});
 
-		app.controller('loginCtrl', function ($scope, loginService, $location, userSession) {
+		app.run(function ($rootScope, loginService, AUTH_EVENTS, $location) {
+			$rootScope.$on('$routeChangeStart', function (event, next) {
+				if(angular.isDefined(next.data)) {
+					var authorizedRoles = next.data.authorizedRoles;
+					if(angular.isDefined(authorizedRoles)) {
+						if(loginService.isAuthenticated()) {
+							if(!loginService.isAuthorized(authorizedRoles)) {
+								$rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+							}
+						} else {
+							$rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+						}
+					}
+				}
+			});
+
+			$rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
+				$location.path('login');
+			});
+
+			$rootScope.$on(AUTH_EVENTS.notAuthorized, function () {
+				$location.path('noaccess');
+			});
+
+			$rootScope.$on(AUTH_EVENTS.loginSuccess, function () {
+				$location.path('route1');
+			});
+
+			$rootScope.$on(AUTH_EVENTS.logoutSuccess, function () {
+				$location.path('login');
+			});
+		});
+
+		app.controller('loginCtrl', function ($scope, $rootScope, loginService, AUTH_EVENTS) {
 			$scope.login = function (credentials) {
 				loginService.login(credentials)
 					.then(function () {
-						$scope.logged = "Access granted!";
-						$location.path('route1');
+						$rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
 					}, function (res) {
-						$scope.logged = res ? "Invalid password..." : "Login failed...";
+						$rootScope.$broadcast(AUTH_EVENTS.loginFailed, res);
 					});
 			};
+			$rootScope.$on(AUTH_EVENTS.loginFailed, function (res) {
+				$scope.logged = res ? "Invalid user or password..." : "Login failed...";
+			});
 		});
 
-		app.controller('routeCtrl', function ($scope, $routeParams, model, dateInfo, userSession) {
-			
-			console.log(userSession.userId);
-
+		app.controller('routeCtrl', function ($scope, $rootScope, $routeParams, model, dateInfo) {
 			$scope.currentId = model.routeId;
 			$scope.from = $routeParams.from;
-			$scope.date = dateInfo.currentDate;			
-		});
-
-		app.controller('mainCtrl', function ($scope, $rootScope, $location, loginService) {
+			$scope.date = dateInfo.currentDate;
 			$rootScope.$on('$routeChangeError', function () {
 				$scope.date = 'ERROR!';
 			});
-			
+		});
+
+		app.controller('mainCtrl', function ($scope, $rootScope, $location, loginService, AUTH_EVENTS) {
 			$scope.template = { nav: "nav.html" };
 			$scope.isAuthenticated = loginService.isAuthenticated;
+			$scope.userInfo = loginService.getUserInfo;
 
 			$scope.go = function (path) {
 				var currentRoute = $location.path().split('/')[1];
 				$location.path(path + '/' + currentRoute);
+			};
+
+			$scope.logout = function () {
+				loginService.logout();
+				$rootScope.$broadcast(AUTH_EVENTS.logoutSuccess);
 			};
 		});
 
@@ -174,6 +254,9 @@
 </head>
 <body ng-controller="mainCtrl">
 	<div ng-if="isAuthenticated()" ng-include="template.nav"></div>
+	<br />
 	<div ng-view></div>
+	<br />
+	<a href="#" ng-if="isAuthenticated()" ng-click="logout()">Logout</a>
 </body>
 </html>

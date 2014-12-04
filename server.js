@@ -2,6 +2,33 @@ var express = require('express'),
 	bodyParser = require('body-parser'),
 	app = express();
 
+var users = [
+	{
+		name: 'pablo',
+		password: 'diaz42',
+		role: 'admin'
+	},
+	{
+		name: 'diego',
+		password: 'dd42',
+		role: 'editor'
+	},
+	{
+		name: 'lucas',
+		password: 'lk123',
+		role: 'guest'
+	}
+];
+
+var findUser = function (username) {
+	for (var i = 0; i < users.length; i++) {
+		if (username == users[i].name) {
+			return users[i];
+		}
+	}
+	return null;
+};
+
 app.use(express.static(__dirname + '/apps'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -9,27 +36,34 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.get('/rest/date', function (req, res) {
+	var time = (Math.floor(Math.random() *5) + 1) * 1000;
+
 	setTimeout(function () {
 		res.json({
 			currentDate: new Date()
 		});
-	}, 3000);
+	}, time);
 });
 
 app.post('/rest/login', function (req, res) {
-	var credentials = {
-			user: 'pablo',
-			password: 'diaz42'
-		},
-		response = {
-			logged: JSON.stringify(credentials) == JSON.stringify(req.body)
-		};
 
-	console.log(credentials);
+	var user = findUser(req.body.user),
+		time = (Math.floor(Math.random() *5) + 1) * 1000;
+
+	if(!!user && (req.body.password == user.password)) {
+		response = {
+			username: user.name,
+			role: user.role
+		}
+	} else {
+		response = {
+			error: "accessDenied"
+		}
+	}
 
 	setTimeout(function () {
 		res.json(response);
-	}, 3000);
+	}, time);
 });
 
 app.get('/rest/add/:a/:b', function (req, res) {
