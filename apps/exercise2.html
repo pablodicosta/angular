@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html ng-app="parsers">
+<head>
+	<title>Ejercicio 2</title>
+	<script type="text/javascript" src="angular.min.js"></script>
+
+	<script type="text/javascript">
+
+		var app = angular.module('parsers', []);
+
+		var isCurrency = function (num) {
+			return /^\$\d+(\.\d*)?$/g.test(num);
+		}, isPercentage = function (num) {
+			return /^\d+(\.\d*)?%$/g.test(num);
+		};
+
+		app.directive('unitSelector', function () {
+
+			var tpl =  "<div> \
+							<input type='text' ng-model='num' /> \
+							<select ng-model='type'> \
+								<option value='percent'>Percent</option> \
+								<option value='money'>Money</option> \
+								<option value='unknown'>Unknown</option> \
+							</select> \
+						</div>";
+
+			return {
+				restrict: "E",
+				template: tpl,
+				require: "^ngModel",
+				replace: true,
+				link: function(scope, element, attrs, ngModelCtrl) {
+					
+					ngModelCtrl.$parsers.push(function (viewValue) {
+
+						if(isCurrency(viewValue.num)) {
+							scope.type = "money";
+						} else if(isPercentage(viewValue.num)) {
+							scope.type = "percent";
+						} else {
+							scope.type = "unknown";
+						}
+
+						var val = angular.isDefined(viewValue.num) && scope.type != "unknown" ?
+									parseFloat(viewValue.num.match(/\d+(\.\d*)?/g)).toFixed(4) : 0;
+
+						return val;
+					});
+
+					scope.$watch("num" ,function () {
+						ngModelCtrl.$setViewValue({
+							num: scope.num
+						});
+					});
+
+					scope.$watch("type", function () {
+
+						var val = !isNaN(scope.num) || isCurrency(scope.num) 
+									|| isPercentage(scope.num) ? 
+										parseFloat(scope.num.match(/\d+(\.\d*)?/g)): 0;
+
+						if(scope.type == "money") {
+							scope.num = "$" + val;
+						} else if(scope.type == "percent") {
+							scope.num = val + "%";
+						}
+					});
+				}
+			}
+
+		});
+
+	</script>
+</head>
+<body>
+
+	<unit-selector ng-model="data"></unit-selector>
+	<br /><br />
+	{{data}}
+
+</body>
+</html>
