@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html ng-app="testApp">
+<html ng-app="formsApp">
 <head>
 	<title>Ejercicio 1</title>
-	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/bootstrap/dist/css/bootstrap.min.css">
+	<script type="text/javascript" src="/angular/angular.min.js"></script>
 
 	<style type="text/css">
 		.css-form input.ng-invalid.ng-dirty {
@@ -10,13 +11,11 @@
 		}
 	</style>
 
-	<script type="text/javascript" src="angular.min.js"></script>
-
 	<script type="text/javascript">
 
-		var testApp = angular.module("testApp", []);
+		var formsApp = angular.module("formsApp", []);
 
-		testApp.controller("FormCtrl", function ($scope) {
+		formsApp.controller("FormCtrl", function ($scope) {
 
 			$scope.updateOnBlur = {
 				updateOn: "blur"

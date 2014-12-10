@@ -30,6 +30,7 @@ var findUser = function (username) {
 };
 
 app.use(express.static(__dirname + '/apps'));
+app.use(express.static(__dirname + '/bower_components'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
 	extended: true
