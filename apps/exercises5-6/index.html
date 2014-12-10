@@ -19,7 +19,6 @@
 			loginSuccess: 'auth-login-success',
 			loginFailed: 'auth-login-failed',
 			logoutSuccess: 'auth-logout-success',
-			sessionTimeout: 'auth-session-timeout',
 			notAuthenticated: 'auth-not-authenticated',
 			notAuthorized: 'auth-not-authorized'
 		});
@@ -163,11 +162,14 @@
 					resolve: {
 						model: function () { return route3Model; },
 						dateInfo: getDate
-					} 
+					}
 				})
 				.when('/login', {
 					templateUrl: 'login.html',
-					controller: 'loginCtrl'
+					controller: 'loginCtrl',
+					data: {
+						loginForm: true
+					}
 				})
 				.when('/noaccess', {
 					template: 'Access Denied!'
@@ -180,7 +182,13 @@
 
 		app.run(function ($rootScope, loginService, AUTH_EVENTS, $location) {
 			$rootScope.$on('$routeChangeStart', function (event, next) {
+
 				if(angular.isDefined(next.data)) {
+
+					if(next.data.loginForm && loginService.isAuthenticated()) {
+						$rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+					}
+
 					var authorizedRoles = next.data.authorizedRoles;
 					if(angular.isDefined(authorizedRoles)) {
 						if(loginService.isAuthenticated()) {
@@ -212,6 +220,7 @@
 		});
 
 		app.controller('loginCtrl', function ($scope, $rootScope, loginService, AUTH_EVENTS) {
+
 			$scope.login = function (credentials) {
 				loginService.login(credentials)
 					.then(function () {
@@ -220,6 +229,7 @@
 						$rootScope.$broadcast(AUTH_EVENTS.loginFailed, res);
 					});
 			};
+
 			$rootScope.$on(AUTH_EVENTS.loginFailed, function (res) {
 				$scope.logged = res ? "Invalid user or password..." : "Login failed...";
 			});
@@ -258,6 +268,6 @@
 	<br />
 	<div ng-view></div>
 	<br />
-	<a href="#" ng-if="isAuthenticated()" ng-click="logout()">Logout</a>
+	<a href ng-if="isAuthenticated()" ng-click="logout()">Logout</a>
 </body>
 </html>
