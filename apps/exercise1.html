@@ -16,10 +16,18 @@
 
 		var testApp = angular.module("testApp", []);
 
-		testApp.controller("ExampleController", function ($scope) {
+		testApp.controller("FormCtrl", function ($scope) {
+
+			$scope.updateOnBlur = {
+				updateOn: "blur"
+			};
+
+			$scope.onlyLetters = /^[a-zA-Z\s]*$/g;
+			$scope.onlyNumbers = /^\d*$/g;
 
 			$scope.validate = function () {
 				$scope.invalidName = $scope.form.uName.$invalid;
+				$scope.invalidAge = $scope.form.uAge.$invalid;
 			}
 
 		});
@@ -27,20 +35,30 @@
 	</script>
 </head>
 <body>
-	<div ng-controller="ExampleController">
+	<div ng-controller="FormCtrl">
 	  <form novalidate class="css-form" name="form">
+
 		  Name:
-		  <input type="text" name="uName" ng-model="user.name" ng-model-options="{ updateOn: 'blur' }" ng-pattern="/[\a-z]/" required /><br />
+		  <input type="text" name="uName" ng-model="user.name" ng-model-options="updateOnBlur" ng-pattern="onlyLetters" required /><br />
 		  <div ng-show="invalidName">
 		  	<div ng-show="form.uName.$error.required">Required Field</div>
 		  	<div ng-show="form.uName.$error.pattern">Invalid Name</div>
 		  </div>
 		  Age:
-		  <input type="text" name="uAge" ng-model="user.age" ng-model-options="{ updateOn: 'blur' }" ng-pattern="/[\0-9]/" required /><br />
+		  <input type="text" name="uAge" ng-model="user.age" ng-model-options="updateOnBlur" ng-pattern="onlyNumbers" required /><br />
+		  <div ng-show="invalidAge">
+			<div ng-show="form.uAge.$error.required">Required Field</div>
+			<div ng-show="form.uAge.$error.pattern">Invalid Age</div>
+		  </div>
 		  Address:
-		  <input type="text" name="uAddress" ng-model="user.address" ng-model-options="{ updateOn: 'blur' }" /><br />		  
+		  <input type="text" name="uAddress" ng-model="user.address" ng-model-options="updateOnBlur" /><br />
 		  <button ng-click="validate()">Save</button>
+
+		  <br /> <br />
+		  Model:<br />
+		  {{user}}
+
 	  </form>
-	</div>	
+	</div>
 </body>
 </html>
