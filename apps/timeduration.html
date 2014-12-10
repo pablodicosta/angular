@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html ng-app="timeDurationApp">
+<head>
+	<title>TimeDuration</title>
+	<link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+	<script type="text/javascript" src="angular-1.3.3.min.js"></script>
+
+	<script type="text/javascript">
+
+		function timeDurationDirective () {
+			
+			var tpl = "<div> \
+							<input type='text' ng-model='num' size='80' /> \
+							<select ng-model='unit'> \
+								<option value='secs'>Segundos</option> \
+								<option value='mins'>Minutos</option> \
+								<option value='hours'>Horas</option> \
+								<option value='days'>Días</option> \
+							</select> \
+						</div>";
+
+			return {
+				restrict: 'E',
+				template: tpl,
+				require: '^ngModel',
+				replace: true,
+				link: function (scope, element, attrs, ngModelCtrl) {
+					
+					multiplierMap = { secs: 1, mins: 60, hours: 3600, days: 86400 };
+					multiplierTypes = ['secs', 'mins', 'hours', 'days'];
+
+					ngModelCtrl.$formatters.push(function (modelValue) {
+
+						var unit = 'mins', num = 0, i, unitName;
+
+						modelValue = parseInt(modelValue || 0);
+
+						for (i = multiplierTypes.length - 1; i >= 0; i--) {
+				            unitName = multiplierTypes[i];
+				            if (modelValue % multiplierMap[unitName] === 0) {
+				                unit = unitName;
+				                break;
+				            }
+				        }
+
+				        if (modelValue) {
+				            num = modelValue / multiplierMap[unit]
+				        }
+
+				        return {
+				            unit: unit,
+				            num:  num
+				        };
+					});
+
+					ngModelCtrl.$render = function () {
+						scope.unit = ngModelCtrl.$viewValue.unit;
+						scope.num = ngModelCtrl.$viewValue.num;
+					}
+
+					ngModelCtrl.$parsers.push(function (viewValue) {
+						var unit = viewValue.unit,
+							num = viewValue.num,
+							multiplier = multiplierMap[unit],
+							result = num * multiplier;
+
+						return result;
+					});
+
+					scope.$watch('num', function () {						
+						ngModelCtrl.$setViewValue({
+							unit: scope.unit,
+							num: scope.num
+						});						
+					});
+
+					scope.$watch('unit', function () {
+						scope.num = ngModelCtrl.$modelValue / multiplierMap[scope.unit];
+					});
+
+				}
+			};
+		};
+
+
+		function mainController($scope) {
+			$scope.time = 1;	
+		}
+
+		var app = angular.module('timeDurationApp', []);
+
+		app.directive('timeDuration', timeDurationDirective);
+		app.controller('mainController', mainController);
+
+	</script>
+
+</head>
+<body ng-controller="mainController">
+	<time-duration ng-model="time"></time-duration>
+	<input type="text" ng-model="time" />
+</body>
+</html>

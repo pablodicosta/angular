@@ -12,6 +12,8 @@
 			return /^\$\d+(\.\d*)?$/g.test(num);
 		}, isPercentage = function (num) {
 			return /^\d+(\.\d*)?%$/g.test(num);
+		}, getNumber = function (num) {
+			return parseFloat(num.match(/\d+(\.\d*)?/g));
 		};
 
 		app.directive('unitSelector', function () {
@@ -34,37 +36,36 @@
 					
 					ngModelCtrl.$parsers.push(function (viewValue) {
 
-						if(isCurrency(viewValue.num)) {
+						if(isCurrency(viewValue)) {
 							scope.type = "money";
-						} else if(isPercentage(viewValue.num)) {
+						} else if(isPercentage(viewValue)) {
 							scope.type = "percent";
 						} else {
 							scope.type = "unknown";
 						}
 
-						var val = angular.isDefined(viewValue.num) && scope.type != "unknown" ?
-									parseFloat(viewValue.num.match(/\d+(\.\d*)?/g)).toFixed(4) : 0;
+						var val = angular.isDefined(viewValue) && (!isNaN(viewValue) || scope.type != "unknown") ?
+									getNumber(viewValue).toFixed(4) : 0;
 
 						return val;
 					});
 
 					scope.$watch("num" ,function () {
-						ngModelCtrl.$setViewValue({
-							num: scope.num
-						});
+						ngModelCtrl.$setViewValue(scope.num);
 					});
 
 					scope.$watch("type", function () {
+						
+						var val = parseFloat(ngModelCtrl.$modelValue);
 
-						var val = !isNaN(scope.num) || isCurrency(scope.num) 
-									|| isPercentage(scope.num) ? 
-										parseFloat(scope.num.match(/\d+(\.\d*)?/g)): 0;
-
-						if(scope.type == "money") {
-							scope.num = "$" + val;
-						} else if(scope.type == "percent") {
-							scope.num = val + "%";
+						if(angular.isDefined(val)) {					
+							if(scope.type == "money") {
+								scope.num = "$" + val;
+							} else if(scope.type == "percent") {
+								scope.num = val + "%";
+							}	
 						}
+						
 					});
 				}
 			}
@@ -77,6 +78,7 @@
 
 	<unit-selector ng-model="data"></unit-selector>
 	<br /><br />
+	Model:<br />
 	{{data}}
 
 </body>
