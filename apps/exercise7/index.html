@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html ng-app="uiApp">
+<head>
+	<title>Exercise 7</title>
+	<link rel="stylesheet" type="text/css" href="/bootstrap/dist/css/bootstrap.min.css">
+	<script type="text/javascript" src="/angular/angular.min.js"></script>
+	<script type="text/javascript" src="/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+	<script type="text/javascript" src="/jquery/dist/jquery.min.js"></script>
+	<script type="text/javascript" src="/bootstrap/dist/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript">
+
+		var app = angular.module('uiApp', ['ui.bootstrap']);
+
+		app.controller('mainCtrl', function($scope, $modal) {
+
+			$scope.template = { nav: "nav.html" };
+
+			$scope.openGreetModal = function () {
+				var greetModal = $modal.open({
+					templateUrl: 'greet.html',
+					controller: 'greetModalCtrl',
+					resolve: {
+						name: function () {
+							return $scope.name;
+						}
+					}
+				});
+
+				greetModal.result.then(function(name) {
+					$scope.name = name;
+				});
+			};
+		});
+
+		app.controller('greetModalCtrl', function ($scope, $modalInstance, name) {
+
+			$scope.name = name;
+
+			$scope.ok = function () {
+				$modalInstance.close($scope.name);
+			};
+
+			$scope.cancel = function () {
+				$modalInstance.dismiss();
+			};
+		});
+
+	</script>
+</head>
+<body ng-controller="mainCtrl">
+
+	<div ng-include="template.nav"></div>
+
+	<div class="container">
+		<div class="row" ng-if="name">
+			<div class="well">
+				<h4>Hello {{name}}!!</h4>
+			</div>
+		</div>
+	</div>
+	
+</body>
+</html>
