@@ -1,0 +1,14 @@
+.carousel-inner > .item > img {
+	height: 300px !important;
+	display: block !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
+
+.angular-google-map-container { 
+	height: 400px;
+}
+
+.ui-match {
+	background: yellow;
+}

@@ -1,5 +1,6 @@
 var express = require('express'),
 	bodyParser = require('body-parser'),
+	request = require('request'),
 	app = express();
 
 var users = [
@@ -77,6 +78,13 @@ app.get('/rest/add/:a/:b', function (req, res) {
 			result: a + b
 		});
 	}, time);
+});
+
+app.get('/rest/lorem', function (req, res) {
+	request('http://loripsum.net/api/10/medium', function (error, response, body) {
+		res.setHeader('content-type', 'text/plain');
+		res.send(body);
+	});
 });
 
 app.listen(3000, function () {

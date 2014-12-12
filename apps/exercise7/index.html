@@ -2,24 +2,56 @@
 <html ng-app="uiApp">
 <head>
 	<title>Exercise 7</title>
+	<link rel="stylesheet" type="text/css" href="./styles.css">
 	<link rel="stylesheet" type="text/css" href="/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="/angular-ui-grid/ui-grid.min.css">
 	<script type="text/javascript" src="/angular/angular.min.js"></script>
 	<script type="text/javascript" src="/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
 	<script type="text/javascript" src="/angular-ui-router/release/angular-ui-router.js"></script>
 	<script type="text/javascript" src="/angular-ui-grid/ui-grid.min.js"></script>
+	<script type="text/javascript" src="/angular-ui-utils/ui-utils.min.js"></script>
+	<script type="text/javascript" src="/angular-google-maps/dist/angular-google-maps.min.js"></script>
+	<script type="text/javascript" src="/angular-sanitize/angular-sanitize.min.js"></script>
+	<script type="text/javascript" src="/lodash/dist/lodash.min.js"></script>
 	<script type="text/javascript" src="/jquery/dist/jquery.min.js"></script>
 	<script type="text/javascript" src="/bootstrap/dist/js/bootstrap.min.js"></script>
 
 	<script type="text/javascript">
 
-		var app = angular.module('uiApp', ['ui.bootstrap', 'ui.router', 'ui.grid', 'ui.grid.edit']);
+		var app = angular.module('uiApp', [
+			'ui.bootstrap',
+			'ui.router',
+			'ui.utils',
+			'ui.grid',
+			'ui.grid.edit',
+			'ui.grid.selection',
+			'uiGmapgoogle-maps',
+			'ngSanitize'
+		]);
 
-		app.config(function ($stateProvider) {
+		app.config(function ($stateProvider, uiGmapGoogleMapApiProvider) {
 
-			$stateProvider.state('images', {
+			uiGmapGoogleMapApiProvider.configure();
+
+			$stateProvider.state('home', {
+				url: '',
+				templateUrl: 'home.html',
+				controller: 'homeCtrl',
+				resolve: {
+					lorem: function ($q, $http) {
+						var deferred = $q.defer();
+						$http.get('/rest/lorem').then(function (res) {
+							deferred.resolve(res.data);
+						});
+						return deferred.promise;
+					}
+				}
+			}).state('images', {
 				templateUrl: 'images.html',
 				controller: 'imagesCtrl'
+			}).state('maps', {
+				templateUrl: 'maps.html',
+				controller: 'mapsCtrl'
 			});
 
 		});
@@ -69,16 +101,41 @@
 
 			$scope.gridOptions = {
 				data: 'imgs',
-				enableCellSelection: false,
-				enableRowSelection: false,
+				enableRowSelection: true,
+				enableRowHeaderSelection: false,
+				multiSelect: false,
+				noUnselect: true,
 				enableHorizontalScrollbar: false,
 				enableVerticalScrollbar: false,
 				enableSorting: false,
 				columnDefs: [
 					{ field: 'url', displayName: 'URL', enableColumnMenu: false, enableCellEdit: true }
-				]
+				],
+				onRegisterApi: function (gridApi) {
+					$scope.gridApi = gridApi;
+				}
 			};
 
+			$scope.add = function () {
+				$scope.imgs.push({});
+			};
+
+			$scope.remove = function () {
+				var item = $scope.gridApi.grid.selection.lastSelectedRow.entity;
+					index = $scope.imgs.indexOf(item);
+				$scope.imgs.splice(index, 1);
+			};
+
+		});
+
+		app.controller('mapsCtrl', function ($scope, uiGmapGoogleMapApi) {
+			uiGmapGoogleMapApi.then(function () {
+				$scope.map = { center: { latitude: -32.892, longitude: -68.84 }, zoom: 16 };
+			});
+		});
+
+		app.controller('homeCtrl', function ($scope, lorem) {
+			$scope.lorem = lorem;
 		});
 
 	</script>

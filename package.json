@@ -19,6 +19,7 @@
   "homepage": "https://github.com/pablodicosta/angular",
   "dependencies": {
     "body-parser": "^1.9.3",
-    "express": "^4.10.4"
+    "express": "^4.10.4",
+    "request": "^2.51.0"
   }
 }

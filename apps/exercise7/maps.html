@@ -1,0 +1,10 @@
+<div class="col-md-6">
+	<label for="lat">Latitude</label><input type="text" id="lat" class="form-control" ng-model="map.center.latitude">
+	<br />
+	<label for="lon">Longitude</label><input type="text" id="lon" class="form-control" ng-model="map.center.longitude">
+	<br />
+	<label for="zoom">Zoom</label><input type="text" id="zoom" class="form-control" ng-model="map.zoom">
+</div>
+<div class="col-md-6">
+	<ui-gmap-google-map center='map.center' zoom='map.zoom'></ui-gmap-google-map>
+</div>
