@@ -7,7 +7,7 @@
 
 	<style type="text/css">
 		.css-form input.ng-invalid.ng-dirty {
-			background-color: #FA787E;
+			background-color: red;
 		}
 	</style>
 
@@ -35,29 +35,41 @@
 </head>
 <body>
 	<div ng-controller="FormCtrl">
-	  <form novalidate class="css-form" name="form">
+		<br /><br />
+		<div class="row">
+			<div class="col-md-6 col-md-offset-1">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<form novalidate class="css-form" name="form">
+							<div class="form-group">
+								<label for="name">Name:</label>
+								<input type="text" class="form-control" id="name" name="uName" ng-model="user.name" ng-model-options="updateOnBlur" ng-pattern="onlyLetters" required />
+								<div ng-show="invalidName">
+									<div ng-show="form.uName.$error.required">Required Field</div>
+									<div ng-show="form.uName.$error.pattern">Invalid Name</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="age">Age:</label>
+								<input type="text" class="form-control" id="age" name="uAge" ng-model="user.age" ng-model-options="updateOnBlur" ng-pattern="onlyNumbers" required />
+								<div ng-show="invalidAge">
+									<div ng-show="form.uAge.$error.required">Required Field</div>
+									<div ng-show="form.uAge.$error.pattern">Invalid Age</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="address">Address:</label>
+								<input type="text" class="form-control" id="address" name="uAddress" ng-model="user.address" ng-model-options="updateOnBlur" />
+							</div>
+							<button class="btn btn-success" ng-click="validate()">Save</button>
+						</form>
 
-		  Name:
-		  <input type="text" name="uName" ng-model="user.name" ng-model-options="updateOnBlur" ng-pattern="onlyLetters" required /><br />
-		  <div ng-show="invalidName">
-		  	<div ng-show="form.uName.$error.required">Required Field</div>
-		  	<div ng-show="form.uName.$error.pattern">Invalid Name</div>
-		  </div>
-		  Age:
-		  <input type="text" name="uAge" ng-model="user.age" ng-model-options="updateOnBlur" ng-pattern="onlyNumbers" required /><br />
-		  <div ng-show="invalidAge">
-			<div ng-show="form.uAge.$error.required">Required Field</div>
-			<div ng-show="form.uAge.$error.pattern">Invalid Age</div>
-		  </div>
-		  Address:
-		  <input type="text" name="uAddress" ng-model="user.address" ng-model-options="updateOnBlur" /><br />
-		  <button ng-click="validate()">Save</button>
-
-		  <br /> <br />
-		  Model:<br />
-		  {{user}}
-
-	  </form>
+						<br /> <br />
+						<h4>Model:	{{user}}</h4>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

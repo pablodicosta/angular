@@ -15,12 +15,7 @@
 			});
 		});
 
-		app.controller('childOneCtrl', function ($scope) {	
-
-			$scope.modelUser = {
-				name: 'Pablo',
-				surname: 'Diaz'
-			};
+		app.controller('childOneCtrl', function ($scope) {
 
 			$scope.btnclick = function () {
 				$scope.modelUser = angular.copy($scope.user);
@@ -34,8 +29,7 @@
 
 		app.controller('childTwoCtrl', function ($scope) {
 			$scope.$on('testEvent2', function (evt, newVal, oldVal) {
-				$scope.name = newVal.name;
-				$scope.surname = newVal.surname;
+				$scope.model = newVal;
 			});
 		});
 
@@ -43,21 +37,38 @@
 
 </head>
 <body>
+
+	<br /><br />
 	<div ng-controller="mainCtrl">
-		
-		<div ng-controller="childOneCtrl">
-			Name:		
-			<input type="text" ng-model="user.name" />
-			<br />
-			Surname:
-			<input type="text" ng-model="user.surname" />
-			<br />
-			<button ng-click="btnclick()">Click me!</button>
+
+		<div ng-controller="childOneCtrl" class="row">
+			<div class="col-md-4 col-md-offset-1">
+				<div class="panel panel-default">
+					<div class="panel-heading">Child Controller 1</div>
+					<div class="panel-body">
+						<div class="form-group">
+							<label for="name">Name:</label>
+							<input type="text" id="name" class="form-control" ng-model="user.name" />
+						</div>
+						<div class="form-group">
+							<label for="name">Surname:</label>
+							<input type="text" id="surname" class="form-control" ng-model="user.surname" />
+						</div>
+						<button class="btn btn-success" ng-click="btnclick()">Fire event!</button>
+					</div>
+				</div>
+			</div>
 		</div>
 
-		<div ng-controller="childTwoCtrl">
-			{{name}}
-			{{surname}}
+		<div ng-controller="childTwoCtrl" class="row">
+			<div class="col-md-4 col-md-offset-1">
+				<div class="panel panel-default">
+					<div class="panel-heading">Child Controller 2</div>
+					<div class="panel-body">
+						<h4>Model: {{model}}</h4>
+					</div>
+				</div>
+			</div>
 		</div>
 
 	</div>
