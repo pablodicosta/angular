@@ -8,7 +8,10 @@
 			<label for="password">Password:</label>
 			<input type="password" id="password" class="form-control" ng-model="credentials.password" ng-required="true"/>
 		</div>
-		<button type="submit" class="btn btn-success">Login</button>
-		{{loginResult}}
+		<button ng-show="!loading" type="submit" class="btn btn-success">Login</button>
+		<button class="btn btn-warning" ng-show="loading">
+			<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>&nbsp;Loading...
+		</button>
+		<span ng-show="!loading">{{loginResult}}</span>
 	</form>
 </div>

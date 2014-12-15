@@ -1,10 +1,13 @@
 app.controller('loginCtrl', function ($scope, $rootScope, loginService, AUTH_EVENTS) {
 	$scope.login = function (credentials) {
+		$scope.loading = true;
 		loginService.login(credentials)
 			.then(function () {
 				$rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
 			}, function (res) {
 				$rootScope.$broadcast(AUTH_EVENTS.loginFailed, res);
+			}).finally(function () {
+				$scope.loading = false;
 			});
 	};
 
@@ -33,6 +36,16 @@ app.controller('mainCtrl', function ($scope, $rootScope, $location, loginService
 
 	$scope.$on('$routeChangeSuccess', function () {
 		$scope.loading = false;
+	});
+
+	$scope.$on('$routeChangeError', function () {
+		$scope.loading = false;
+	});
+
+	$scope.$on(AUTH_EVENTS.notAuthorized, function () {
+		$scope.$evalAsync(function () {
+			$scope.loading = false;
+		});
 	});
 
 	$scope.go = function (path) {
