@@ -231,7 +231,7 @@
 			};
 
 			$rootScope.$on(AUTH_EVENTS.loginFailed, function (res) {
-				$scope.logged = res ? "Invalid user or password..." : "Login failed...";
+				$scope.loginResult = res ? "Invalid user or password..." : "Login failed...";
 			});
 		});
 
@@ -266,8 +266,10 @@
 <body ng-controller="mainCtrl">
 	<div ng-if="isAuthenticated()" ng-include="template.nav"></div>
 	<br />
-	<div ng-view></div>
-	<br />
-	<a href ng-if="isAuthenticated()" ng-click="logout()">Logout</a>
+	<div class="container">
+		<div class="row">
+			<div ng-view></div>
+		</div>
+	</div>
 </body>
 </html>

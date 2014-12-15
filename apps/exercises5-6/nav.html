@@ -1,5 +1,16 @@
-Hello, {{userInfo().name}}!!
-<br />
-<button ng-click="go('route1')">Route 1</button>
-<button ng-click="go('route2')">Route 2</button>
-<button ng-click="go('route3')">Route 3</button>
+<nav class="navbar navbar-default" role="navigation">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<a ui-sref="home" class="navbar-brand">Exercises 5 and 6</a>
+		</div>
+		<ul class="nav navbar-nav">
+			<li><a href ng-click="go('route1')">Route 1</a></li>
+			<li><a href ng-click="go('route2')">Route 2</a></li>
+			<li><a href ng-click="go('route3')">Route 3</a></li>
+		</ul>
+		<div class="navbar-right">
+			<p class="navbar-text">Hello, {{userInfo().name}}!!</p>
+			<button class="btn btn-default navbar-btn" ng-if="isAuthenticated()" ng-click="logout()">Logout</button>
+		</div>
+	</div>
+</nav>
